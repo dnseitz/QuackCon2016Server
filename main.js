@@ -5,6 +5,8 @@ const Joi = require('joi');
 const AWS = require('aws-sdk');
 const SNS = new AWS.SNS({region: 'us-west-2'});
 
+AWS.config.loadFromPath('./config.json');
+
 const iosAppArn = "arn:aws:sns:us-west-2:164008979560:app/APNS_SANDBOX/QuackCon2016"
 const andrAppArn = ""
 const errorStrings = {
@@ -106,6 +108,14 @@ server.route({
 		}
 		else if (query.type === 'android') {
 			appArn = andrAppArn;
+		}
+		else {
+			const error = {
+				error: 'UNKNOWN_DEVICE_TYPE',
+				info: [query.type]
+			};
+			reply(error);
+			return;
 		}
 
 		const params = {
