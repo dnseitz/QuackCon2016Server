@@ -5,11 +5,14 @@ const Joi = require('joi');
 const AWS = require('aws-sdk');
 const SNS = new AWS.SNS({region: 'us-west-2'});
 
-const appArn = "arn:aws:sns:us-west-2:164008979560:app/APNS_SANDBOX/QuackCon2016"
+const iosAppArn = "arn:aws:sns:us-west-2:164008979560:app/APNS_SANDBOX/QuackCon2016"
+const andrAppArn = ""
 const errorStrings = {
 	missingParam: 'MISSING_REQUIRED_PARAMETER',
 	unknownTopic: 'UNKNOWN_TOPIC'
 }
+
+AWS.config.update({accessKeyId: 'AKIAIQXKLKPME5TYRDZQ', secretAccessKey: '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'});
 
 console.log(SNS.endpoint);
 
@@ -83,14 +86,23 @@ server.route({
 	path: '/register',
 	handler: function(request, reply) {
 		const query = request.query;
-		if (!query.token) {
+		if (!query.token || !query.type) {
 			var missing = [];
 			if (!query.token) missing.push('token');
+			if (!query.token) missing.push('type');
 
 			const error = {
 				error: errorStrings.missingParam,
 				info: missing
 			}
+		}
+
+		let appArn;
+		if (query.type === 'ios') {
+			appArn = iosAppArn;
+		}
+		else if (query.type === 'android') {
+			appArn = andrAppArn;
 		}
 
 		const params = {
@@ -217,9 +229,9 @@ server.start((err) => {
 });
 
 
-/*
+
 var http = require("http");
-    url = "http://api.sportradar.us/nfl-ot1/games/c8dc876a-099e-4e95-93dc-0eb143c6954f/boxscore.json?api_key=6vgqj9xr6fqj2es2umvwcc35";
+var url = "http://api.sportradar.us/nfl-ot1/games/c8dc876a-099e-4e95-93dc-0eb143c6954f/boxscore.json?api_key=6vgqj9xr6fqj2es2umvwcc35";
 
 // get is a simple wrapper for request()
 // which sets the http method to GET
@@ -240,11 +252,11 @@ var request = http.get(url, function (response) {
         console.log(buffer);
         console.log("\n");
         data = JSON.parse(buffer);
-        summary = data.summary[0];
+        summary = data.season.year[0];
 
         // extract the distance and time
-        console.log("Year: " + route.season[0].distance.text);
-        console.log("Time: " + route.legs[0].duration.text);
+        console.log("Year: " + summary);
+        
     }); 
 }); 
-*/
+
