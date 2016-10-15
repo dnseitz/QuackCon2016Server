@@ -12,8 +12,6 @@ const errorStrings = {
 	unknownTopic: 'UNKNOWN_TOPIC'
 }
 
-AWS.config.update({accessKeyId: 'AKIAIQXKLKPME5TYRDZQ', secretAccessKey: '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'});
-
 console.log(SNS.endpoint);
 
 const server = new Hapi.Server();
