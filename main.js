@@ -7,6 +7,8 @@ const SNS = new AWS.SNS({region: 'us-west-2'});
 
 AWS.config.loadFromPath('./config.json');
 
+console.log(AWS.config.credentials);
+
 const iosAppArn = "arn:aws:sns:us-west-2:164008979560:app/APNS_SANDBOX/QuackCon2016"
 const andrAppArn = ""
 const errorStrings = {
@@ -31,10 +33,14 @@ server.route({
 });
 
 function publish(message, topicArn, cb) {
-	const params = {
+	let isObject = (typeof message !== null && typeof message === 'object')
+	var params = {
 		Message: message,
 		TopicArn: topicArn
 	};
+	if (isObject) {
+		params.MessageStructure = 'json';
+	}
 	SNS.publish(params, function(err, data) {
 		if (err) {
 			console.log(err, err.stack);
@@ -50,40 +56,33 @@ function publish(message, topicArn, cb) {
 server.route({
 	method: 'POST',
 	path: '/publish',
-	config: {
-		handler: function(request, reply) {
-			const query = request.query
-			if (!query.topic) {
-				var missing = [];
-				if (!query.topic) missing.push('topic');
+	handler: function(request, reply) {
+		const query = request.query
+		if (!query.topic) {
+			var missing = [];
+			if (!query.topic) missing.push('topic');
 
-				const error = {
-					error: errorStrings.missingParam,
-					info: missing
-				};
-				reply(error);
-				return;
-			}
-			if (!topics[query.topic]) {
-				const error = {
-					error: errorStrings.unknownTopic,
-					info: [query.topic]
-				}
-				reply(error);
-				return;
-			}
-
-			const message = request.payload.message;
-			publish(message, topics[query.topic].topicArn, function(message) {
-				reply(message);
-			});
-			
-		},
-		validate: {
-			payload: {
-				message: Joi.string().required()
-			}
+			const error = {
+				error: errorStrings.missingParam,
+				info: missing
+			};
+			reply(error);
+			return;
 		}
+		if (!topics[query.topic]) {
+			const error = {
+				error: errorStrings.unknownTopic,
+				info: [query.topic]
+			}
+			reply(error);
+			return;
+		}
+
+		const message = request.payload.message;
+		publish(message, topics[query.topic].topicArn, function(message) {
+			reply(message);
+		});
+		
 	}
 });
 
