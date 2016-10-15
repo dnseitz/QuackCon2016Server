@@ -34,13 +34,21 @@ server.route({
 
 function publish(message, topicArn, cb) {
 	let isObject = (typeof message !== null && typeof message === 'object')
+
 	var params = {
 		Message: message,
 		TopicArn: topicArn
 	};
 	if (isObject) {
+		let wrapper = {
+			'default': 'default',
+			'APNS': JSON.stringify({'aps': {'content-available': 1, data: message}}),
+			'APNS_SANDBOX': JSON.stringify({'aps': {'content-available': 1, data: message}})
+		}
 		params.MessageStructure = 'json';
+		params.Message = JSON.stringify(wrapper);
 	}
+
 	SNS.publish(params, function(err, data) {
 		if (err) {
 			console.log(err, err.stack);
@@ -281,6 +289,12 @@ server.start((err) => {
 	}
 
 	console.log(`Server running at: ${server.info.uri}`);
+
+	let data = {
+		someData: "SOME DATA",
+		otherData: "Other"
+	};
+	publish(data, "arn:aws:sns:us-west-2:164008979560:HapiTest");
 });
 
 
