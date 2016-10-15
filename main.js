@@ -29,6 +29,23 @@ server.route({
 	}
 });
 
+function publish(message, topicArn, cb) {
+	const params = {
+		Message: message,
+		TopicArn: topicArn
+	};
+	SNS.publish(params, function(err, data) {
+		if (err) {
+			console.log(err, err.stack);
+			if (cb) cb('Error publishing');
+		}
+		else {
+			console.log(data);
+			if (cb) cb('Message published');
+		}
+	});
+}
+
 server.route({
 	method: 'POST',
 	path: '/publish',
@@ -56,20 +73,8 @@ server.route({
 			}
 
 			const message = request.payload.message;
-			
-			const params = {
-				Message: message,
-				TopicArn: topics[query.topic].topicArn
-			};
-			SNS.publish(params, function(err, data) {
-				if (err) {
-					console.log(err, err.stack);
-					reply('Error publishing');
-				}
-				else {
-					console.log(data);
-					reply('Message published');
-				}
+			publish(message, topics[query.topic].topicArn, function(message) {
+				reply(message);
 			});
 			
 		},
@@ -249,13 +254,14 @@ var request = http.get(url, function (response) {
     response.on("end", function (err) {
         // finished transferring data
         // dump the raw data
-        console.log(buffer);
+       // console.log(buffer);
         console.log("\n");
-        data = JSON.parse(buffer);
-        summary = data.season.year[0];
+       var data = JSON.parse(buffer);
+        //summary = data.season.year[0];
 
         // extract the distance and time
-        console.log("Year: " + summary);
+        console.log(data.summary)
+        console.log("Home Team: " + data.summary.home.name);
         
     }); 
 }); 
