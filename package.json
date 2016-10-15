@@ -9,6 +9,8 @@
   "author": "Daniel Seitz",
   "license": "ISC",
   "dependencies": {
-    "hapi": "^15.1.1"
+    "aws-sdk": "^2.6.9",
+    "hapi": "^15.1.1",
+    "joi": "^9.1.1"
   }
 }
