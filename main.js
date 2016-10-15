@@ -9,7 +9,8 @@ const iosAppArn = "arn:aws:sns:us-west-2:164008979560:app/APNS_SANDBOX/QuackCon2
 const andrAppArn = ""
 const errorStrings = {
 	missingParam: 'MISSING_REQUIRED_PARAMETER',
-	unknownTopic: 'UNKNOWN_TOPIC'
+	unknownTopic: 'UNKNOWN_TOPIC',
+	unknownType: 'UNKNOWN_DEVICE_TYPE'
 }
 
 console.log(SNS.endpoint);
@@ -98,6 +99,8 @@ server.route({
 				error: errorStrings.missingParam,
 				info: missing
 			}
+			reply(error);
+			return;
 		}
 
 		let appArn;
@@ -106,6 +109,14 @@ server.route({
 		}
 		else if (query.type === 'android') {
 			appArn = andrAppArn;
+		}
+		else {
+			const error = {
+				error: errorStrings.unknownType,
+				info: [query.type]
+			};
+			reply(error);
+			return;
 		}
 
 		const params = {
@@ -160,6 +171,46 @@ server.route({
 					displayName: displayName
 				}
 				reply('Topic successfully created');
+			}
+		});
+	}
+});
+
+server.route({
+	method: 'DELETE',
+	path: '/remove',
+	handler: function(request, reply) {
+		const query = request.query;
+		if (!query.topic) {
+			var missing = []
+			if (!query.topic) missing.push('topic');
+			
+			const error = {
+				error: errorStrings.missingParam,
+				info: missing
+			};
+			reply(error);
+			return;
+		}
+		if (!topics[query.topic]) {
+			const error = {
+				error: errorStrings.unknownTopic,
+				info: [query.topic]
+			}
+			reply(error)
+			return;
+		}
+
+		const params = { TopicArn: topics[query.topic].topicArn };
+		SNS.deleteTopic(params, function(err, data) {
+			if (err) {
+				console.log(err, err.stack);
+				reply('Error deleting topic');
+			}
+			else {
+				console.log(data);
+				delete topics[query.topic];
+				reply('Topic successfully deleted');
 			}
 		});
 	}
