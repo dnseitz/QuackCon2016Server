@@ -1,0 +1,14 @@
+{
+  "name": "quackcon2016",
+  "version": "1.0.0",
+  "description": "Backend server for quackcon app",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Daniel Seitz",
+  "license": "ISC",
+  "dependencies": {
+    "hapi": "^15.1.1"
+  }
+}
