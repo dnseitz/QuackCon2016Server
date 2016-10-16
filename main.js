@@ -7,8 +7,6 @@ const SNS = new AWS.SNS({region: 'us-west-2'});
 
 AWS.config.loadFromPath('./config.json');
 
-console.log(AWS.config.credentials);
-
 const iosAppArn = "arn:aws:sns:us-west-2:164008979560:app/APNS_SANDBOX/QuackCon2016"
 const andrAppArn = ""
 const errorStrings = {
@@ -16,8 +14,6 @@ const errorStrings = {
 	unknownTopic: 'UNKNOWN_TOPIC',
 	unknownType: 'UNKNOWN_DEVICE_TYPE'
 }
-
-console.log(SNS.endpoint);
 
 const server = new Hapi.Server();
 server.connection({ port: 3000 });
@@ -303,39 +299,4 @@ server.start((err) => {
 		someData: "SOME DATA",
 		otherData: "Other"
 	};
-	publish(data, "arn:aws:sns:us-west-2:164008979560:HapiTest");
 });
-
-
-
-var http = require("http");
-var url = "http://api.sportradar.us/nfl-ot1/games/c8dc876a-099e-4e95-93dc-0eb143c6954f/boxscore.json?api_key=6vgqj9xr6fqj2es2umvwcc35";
-
-// get is a simple wrapper for request()
-// which sets the http method to GET
-var request = http.get(url, function (response) {
-    // data is streamed in chunks from the server
-    // so we have to handle the "data" event    
-    var buffer = "", 
-        data,
-        route;
-
-    response.on("data", function (chunk) {
-        buffer += chunk;
-    }); 
-
-    response.on("end", function (err) {
-        // finished transferring data
-        // dump the raw data
-       // console.log(buffer);
-        console.log("\n");
-       var data = JSON.parse(buffer);
-        //summary = data.season.year[0];
-
-        // extract the distance and time
-        console.log(data.summary)
-        console.log("Home Team: " + data.summary.home.name);
-        
-    }); 
-}); 
-
