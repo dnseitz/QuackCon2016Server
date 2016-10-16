@@ -31,27 +31,49 @@ server.route({
 function publish(message, topicArn, cb) {
 	let isObject = (typeof message !== null && typeof message === 'object')
 
-	var params = {
-		TopicArn: topicArn
-	};
+	let wrapper;
 	if (isObject) {
-		let wrapper = {
-			'default': 'default',
-			'APNS': JSON.stringify({'aps': {'content-available': 1, data: message}}),
-			'APNS_SANDBOX': JSON.stringify({'aps': {'content-available': 1, data: message}})
+		let apns = { 'aps': {}};
+		let shouldAlert = false;
+		if (message['alert']) {
+			apns.aps['alert'] = message['alert'];
+			delete message['alert'];
+			shouldAlert = true;
 		}
-		params.MessageStructure = 'json';
-		params.Message = JSON.stringify(wrapper);
+		if (message['badge']) {
+			apns.aps['badge'] = message['badge'];
+			delete message['badge'];
+			shouldAlert = true;
+		}
+		if (message['sound']) {
+			apns.aps['sound'] = message['sound'];
+			delete message['sound'];
+			shouldAlert = true;
+		}
+		if (!shouldAlert) {
+			apns.aps['content-available'] = 1;
+		}
+		apns.aps['data'] = message
+		wrapper = {
+			'default': 'default',
+			'APNS': JSON.stringify(apns),
+			'APNS_SANDBOX': JSON.stringify(apns)
+		}
 	}
 	else {
-		let wrapper = {
+		wrapper = {
 			'default': message,
 			'APNS': JSON.stringify({'aps': {'alert': message}}),
 			'APNS_SANDBOX': JSON.stringify({'aps': {'alert': message}})
 		}
-		params.Message = JSON.stringify(wrapper);
 	}
-
+	const params = {
+		Message: JSON.stringify(wrapper),
+		MessageStructure: 'json',
+		TopicArn: topicArn
+	};
+	
+	console.log(params)
 	SNS.publish(params, function(err, data) {
 		if (err) {
 			console.log(err, err.stack);
